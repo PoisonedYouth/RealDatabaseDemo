@@ -9,23 +9,7 @@ import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 
-@SpringBootTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Testcontainers
-class RealDatabaseDemoApplicationTests {
-
-    companion object {
-        @Container
-        private val mysqlContainer = MySQLContainer<Nothing>("mysql:5.7")
-
-        @DynamicPropertySource
-        @JvmStatic
-        fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl)
-            registry.add("spring.datasource.username", mysqlContainer::getUsername)
-            registry.add("spring.datasource.password", mysqlContainer::getPassword)
-        }
-    }
+class RealDatabaseDemoApplicationTests: BaseDatabaseIntegrationTest() {
 
     @Test
     fun contextLoads() {

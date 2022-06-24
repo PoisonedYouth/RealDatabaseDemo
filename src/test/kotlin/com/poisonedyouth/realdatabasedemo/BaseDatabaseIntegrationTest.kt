@@ -1,29 +1,48 @@
 package com.poisonedyouth.realdatabasedemo
 
+import com.poisonedyouth.realdatabasedemo.BaseDatabaseIntegrationTest.DataSourceConfiguration
+import javax.sql.DataSource
+import org.springframework.boot.jdbc.DataSourceBuilder
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
+import org.springframework.test.context.ContextConfiguration
 import org.testcontainers.containers.MySQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
 
 private class KMySQLContainer(image: DockerImageName) : MySQLContainer<KMySQLContainer>(image)
 
 @SpringBootTest
-@Testcontainers
-abstract class BaseDatabaseIntegrationTes {
+@ContextConfiguration(classes = [DataSourceConfiguration::class])
+class BaseDatabaseIntegrationTest {
 
-    companion object {
-        @Container
-        private val mysqlContainer = MySQLContainer<Nothing>("mysql:5.7")
-
-        @DynamicPropertySource
-        @JvmStatic
-        fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl)
-            registry.add("spring.datasource.username", mysqlContainer::getUsername)
-            registry.add("spring.datasource.password", mysqlContainer::getPassword)
+    @TestConfiguration
+    class DataSourceConfiguration {
+        @Bean
+        fun dataSource(): DataSource {
+            return DatabaseContainer.datasource
         }
+    }
+}
+
+private object DatabaseContainer {
+
+    private var mySQLContainer: KMySQLContainer = KMySQLContainer(
+        DockerImageName.parse("mysql:5.7")
+
+    ).apply {
+        withUsername("root")
+        withPassword("password")
+    }
+    val datasource: DataSource
+        get() = DataSourceBuilder
+            .create()
+            .url(mySQLContainer.jdbcUrl)
+            .password(mySQLContainer.password)
+            .username(mySQLContainer.username)
+            .build()
+
+    init {
+        mySQLContainer.start()
     }
 }
