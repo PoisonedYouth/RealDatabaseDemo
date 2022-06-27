@@ -1,29 +1,31 @@
 package com.poisonedyouth.realdatabasedemo
 
-import com.poisonedyouth.realdatabasedemo.BaseDatabaseIntegrationTest.DataSourceConfiguration
 import javax.sql.DataSource
+import org.junit.jupiter.api.extension.BeforeEachCallback
+import org.junit.jupiter.api.extension.ExtensionContext
 import org.springframework.boot.jdbc.DataSourceBuilder
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
-import org.springframework.test.context.ContextConfiguration
 import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.utility.DockerImageName
 
 private class KMySQLContainer(image: DockerImageName) : MySQLContainer<KMySQLContainer>(image)
 
-@SpringBootTest
-@ContextConfiguration(classes = [DataSourceConfiguration::class])
-class BaseDatabaseIntegrationTest {
+class CleanDatabaseDataSourceExtension : BeforeEachCallback {
 
-    @TestConfiguration
-    class DataSourceConfiguration {
-        @Bean
-        fun dataSource(): DataSource {
-            return DatabaseContainer.datasource
+    override fun beforeEach(context: ExtensionContext?) {
+        dataSource.connection.use {
+            it.createStatement().execute("DELETE FROM customer")
+            it.createStatement().execute("ALTER TABLE customer AUTO_INCREMENT = 1")
+            it.createStatement().execute("DELETE FROM account")
+            it.createStatement().execute("ALTER TABLE account AUTO_INCREMENT = 1")
         }
     }
+
+
+    companion object {
+        val dataSource = DatabaseContainer.datasource
+    }
 }
+
 
 private object DatabaseContainer {
 

@@ -7,13 +7,14 @@ import java.math.BigDecimal
 import java.time.OffsetDateTime
 
 
-class AccountRepositoryIntegrationTest : BaseDatabaseIntegrationTest() {
+@RealDatabaseTest
+class AccountRepositoryIntegrationTest {
 
     @Autowired
     lateinit var accountRepository: AccountRepository
 
     @Test
-    fun `getByFirstName is returning matching user`() {
+    fun `getByAccountNumber is returning matching account`() {
         // given
         val creation = OffsetDateTime.now()
         val account = Account(12345, BigDecimal(123.0), creation)
@@ -23,9 +24,9 @@ class AccountRepositoryIntegrationTest : BaseDatabaseIntegrationTest() {
         val actual = accountRepository.getByAccountNumber(12345)
 
         // then
-        assertThat(actual!!.getId()).isEqualTo(1) // This can be a different value
-        assertThat(actual.accountNumber).isEqualTo(12345)
-        assertThat(actual.value).isEqualByComparingTo(BigDecimal(123.0))
-        assertThat(actual.creation.toEpochSecond()).isEqualTo(creation.toEpochSecond())
+        assertThat(actual!!.getId()).isEqualTo(account.getId())
+        assertThat(actual.accountNumber).isEqualTo(account.accountNumber)
+        assertThat(actual.value).isEqualByComparingTo(account.value)
+        assertThat(actual.creation.toEpochSecond()).isEqualTo(account.creation.toEpochSecond())
     }
 }

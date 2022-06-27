@@ -5,7 +5,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 
-class CustomerRepositoryIntegrationTest : BaseDatabaseIntegrationTest() {
+@RealDatabaseTest
+class CustomerRepositoryIntegrationTest {
 
     @Autowired
     lateinit var customerRepository: CustomerRepository
@@ -20,9 +21,9 @@ class CustomerRepositoryIntegrationTest : BaseDatabaseIntegrationTest() {
         val actual = customerRepository.getByFirstName("John")
 
         // then
-        assertThat(actual!!.getId()).isEqualTo(1) // This can be a different value
-        assertThat(actual.firstName).isEqualTo("John")
-        assertThat(actual.lastName).isEqualTo("Doe")
-        assertThat(actual.age).isEqualTo(42)
+        assertThat(actual!!.getId()).isEqualTo(customer.getId())
+        assertThat(actual.firstName).isEqualTo(customer.firstName)
+        assertThat(actual.lastName).isEqualTo(customer.lastName)
+        assertThat(actual.age).isEqualTo(customer.age)
     }
 }
